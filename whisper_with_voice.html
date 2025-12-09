@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whisper — Your Archive</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Spectral:wght@300;400&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg: #0a0807;
+            --text: #e8e3df;
+            --text-dim: #9a8f86;
+            --accent: #8b9d83;
+            --input-bg: #1a1614;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Spectral', serif;
+            font-weight: 300;
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 80px;
+            opacity: 0;
+            animation: fadeIn 1.5s ease-out forwards;
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+        
+        .leaf {
+            color: var(--accent);
+            font-size: 32px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-dim);
+            font-style: italic;
+            letter-spacing: 0.03em;
+        }
+        
+        /* Search */
+        .search-container {
+            margin-bottom: 80px;
+            opacity: 0;
+            animation: fadeIn 1.5s ease-out 0.3s forwards;
+            position: relative;
+        }
+        
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            background: var(--input-bg);
+            border: none;
+            border-bottom: 1px solid rgba(232, 227, 223, 0.1);
+            color: var(--text);
+            font-family: 'Spectral', serif;
+            font-size: 20px;
+            padding: 20px 0;
+            text-align: center;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+        
+        .search-input:focus {
+            border-bottom-color: var(--accent);
+        }
+        
+        /* Voice Button */
+        .voice-btn {
+            background: transparent;
+            border: 1px solid rgba(232, 227, 223, 0.2);
+            color: var(--text-dim);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .voice-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .voice-btn.listening {
+            border-color: var(--accent);
+            color: var(--accent);
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-border {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(139, 157, 131, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(139, 157, 131, 0);
+            }
+        }
+        
+        .voice-status {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 10px;
+            min-height: 20px;
+            font-style: italic;
+        }
+        
+        /* Results */
+        .results {
+            margin-top: 60px;
+        }
+        
+        .quote-card {
+            margin-bottom: 60px;
+            opacity: 0;
+            animation: fadeIn 1.2s ease-out forwards;
+            padding-bottom: 40px;
+            border-bottom: 1px solid rgba(232, 227, 223, 0.08);
+            position: relative;
+        }
+        
+        .quote-card:last-child {
+            border-bottom: none;
+        }
+        
+        /* Stagger animation delays */
+        .quote-card:nth-child(1) { animation-delay: 0.2s; }
+        .quote-card:nth-child(2) { animation-delay: 0.8s; }
+        .quote-card:nth-child(3) { animation-delay: 1.4s; }
+        
+        .quote-text {
+            font-family: 'Crimson Text', serif;
+            font-size: 24px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: var(--text);
+            quotes: """ """;
+        }
+        
+        .quote-text::before {
+            content: open-quote;
+            color: var(--accent);
+            opacity: 0.6;
+        }
+        
+        .quote-text::after {
+            content: close-quote;
+            color: var(--accent);
+            opacity: 0.6;
+        }
+        
+        .quote-author {
+            font-size: 15px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+        
+        .quote-source {
+            font-size: 13px;
+            color: var(--text-dim);
+            opacity: 0.7;
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+        
+        .quote-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .quote-match {
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        
+        /* Listen Button */
+        .listen-btn {
+            background: transparent;
+            border: 1px solid rgba(232, 227, 223, 0.2);
+            color: var(--text-dim);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Spectral', serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .listen-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .listen-btn.speaking {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        /* Loading state */
+        .loading {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-top: 40px;
+            opacity: 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 16px;
+            margin-top: 60px;
+            font-style: italic;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 600px) {
+            .title {
+                font-size: 36px;
+            }
+            
+            .search-input {
+                font-size: 18px;
+            }
+            
+            .quote-text {
+                font-size: 20px;
+            }
+            
+            .voice-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">
+                <span class="leaf">🌿</span>whisper
+            </h1>
+            <p class="subtitle">your archive</p>
+        </div>
+        
+        <!-- Search -->
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput"
+                    placeholder="what brings you here?"
+                    autocomplete="off"
+                    autofocus
+                >
+                <button class="voice-btn" id="voiceBtn" title="Speak your feeling">
+                    🎤
+                </button>
+            </div>
+            <div class="voice-status" id="voiceStatus"></div>
+        </div>
+        
+        <!-- Results -->
+        <div id="results" class="results"></div>
+    </div>
+    
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const resultsContainer = document.getElementById('results');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        let searchTimeout;
+        
+        // Get API URL based on current host
+        const API_URL = window.location.origin;
+        
+        // Speech Recognition Setup
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = () => {
+                voiceBtn.classList.add('listening');
+                voiceStatus.textContent = 'listening...';
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                searchInput.value = transcript;
+                voiceStatus.textContent = `heard: "${transcript}"`;
+                
+                // Search immediately
+                clearTimeout(searchTimeout);
+                search(transcript);
+            };
+            
+            recognition.onerror = (event) => {
+                voiceBtn.classList.remove('listening');
+                voiceStatus.textContent = 'could not hear clearly, try again';
+                setTimeout(() => {
+                    voiceStatus.textContent = '';
+                }, 3000);
+            };
+            
+            recognition.onend = () => {
+                voiceBtn.classList.remove('listening');
+                setTimeout(() => {
+                    if (!voiceStatus.textContent.includes('heard:')) {
+                        voiceStatus.textContent = '';
+                    }
+                }, 2000);
+            };
+        } else {
+            // Browser doesn't support speech recognition
+            voiceBtn.style.display = 'none';
+        }
+        
+        // Voice button click
+        voiceBtn.addEventListener('click', () => {
+            if (recognition) {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    // Already running
+                }
+            }
+        });
+        
+        // Text-to-Speech function
+        function speakQuote(text, author) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                // Get available voices
+                const voices = window.speechSynthesis.getVoices();
+                
+                // Try to find the best voice (in order of preference)
+                let selectedVoice = null;
+                
+                // Priority 1: Natural, expressive voices
+                const preferredNames = [
+                    'Zira',           // Windows natural voice
+                    'Samantha',       // Mac natural voice
+                    'Google UK English Female',
+                    'Google US English',
+                    'Microsoft Zira',
+                    'Natural',
+                    'Enhanced'
+                ];
+                
+                for (const name of preferredNames) {
+                    selectedVoice = voices.find(v => v.name.includes(name));
+                    if (selectedVoice) break;
+                }
+                
+                // Priority 2: Any female voice
+                if (!selectedVoice) {
+                    selectedVoice = voices.find(v => 
+                        v.name.toLowerCase().includes('female') ||
+                        v.name.toLowerCase().includes('woman')
+                    );
+                }
+                
+                // Priority 3: Just use default
+                if (!selectedVoice && voices.length > 0) {
+                    selectedVoice = voices[0];
+                }
+                
+                // Create utterance
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Configure for intimacy (slower, lower, quieter)
+                utterance.rate = 0.75;    // Even slower for calm
+                utterance.pitch = 0.85;   // Lower for warmth
+                utterance.volume = 0.7;   // Quieter, more whisper-like
+                
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                
+                // Add pauses at punctuation for natural rhythm
+                const textWithPauses = text.replace(/[,.;:]/g, '$&...');
+                utterance.text = textWithPauses;
+                
+                // Speak the quote
+                window.speechSynthesis.speak(utterance);
+                
+                // Speak author after natural pause
+                setTimeout(() => {
+                    const authorUtterance = new SpeechSynthesisUtterance(`by ${author}`);
+                    authorUtterance.rate = 0.75;
+                    authorUtterance.pitch = 0.85;
+                    authorUtterance.volume = 0.5;  // Even quieter for author
+                    if (selectedVoice) authorUtterance.voice = selectedVoice;
+                    window.speechSynthesis.speak(authorUtterance);
+                }, text.length * 40); // More time for slower speech
+            }
+        }
+        
+        // Search function
+        async function search(query) {
+            if (!query || query.trim().length === 0) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+            
+            // Show loading state
+            resultsContainer.innerHTML = '<div class="loading">listening...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        top_k: 3,
+                        threshold: 0.0
+                    })
+                });
+                
+                const data = await response.json();
+                displayResults(data.results);
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsContainer.innerHTML = '<div class="empty-state">whisper is resting. make sure the server is running.</div>';
+            }
+        }
+        
+        // Display results
+        function displayResults(results) {
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="empty-state">no words found for that feeling.<br>try another.</div>';
+                return;
+            }
+            
+            resultsContainer.innerHTML = results.map((quote, index) => `
+                <div class="quote-card">
+                    <div class="quote-text">${quote.text}</div>
+                    <div class="quote-author">— ${quote.author}</div>
+                    ${quote.source ? `<div class="quote-source">${quote.source}</div>` : ''}
+                    <div class="quote-footer">
+                        <div class="quote-match">${Math.round(quote.similarity * 100)}% resonance</div>
+                        <button class="listen-btn" onclick="speakQuote(\`${quote.text.replace(/`/g, '')}\`, '${quote.author}')">
+                            🔊 listen
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Search with debounce (wait for typing to stop)
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                search(e.target.value);
+            }, 1500);
+        });
+        
+        // Also search on Enter
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                search(e.target.value);
+            }
+        });
+        
+        // Load voices (for speech synthesis)
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+    </script>
+</body>
+</html>
